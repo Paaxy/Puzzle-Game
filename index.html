@@ -3,56 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puzzle Game</title>
+    <title>2048 Game</title>
     <style>
         body {
-            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
-            overflow: hidden;
+            background-color: #faf8ef;
+            margin: 0;
             font-family: Arial, sans-serif;
         }
-        .puzzle {
+
+        .game-container {
+            width: 400px;
+            height: 400px;
             display: grid;
-            gap: 2px;
-            border: 2px solid #000;
-            width: 80vw; /* Width based on viewport */
-            height: 80vw; /* Height based on viewport */
-            max-width: 400px; /* Max width */
-            max-height: 400px; /* Max height */
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            background-color: #bbada0;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
-        .puzzle-piece {
+
+        .tile {
+            width: 80px;
+            height: 80px;
+            background-color: #ccc0b3;
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: pointer;
-            background-size: 400px 400px;
+            font-size: 32px;
+            border-radius: 10px;
+            font-weight: bold;
+            color: #fff;
         }
-        .empty {
-            background: #f0f0f0;
-            border: 2px dashed #ccc;
-        }
-        .win-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 20px;
-            font-size: 24px;
-            display: none;
-            z-index: 100;
-            text-align: center;
+
+        .tile-2 { background-color: #eee4da; }
+        .tile-4 { background-color: #ede0c8; }
+        .tile-8 { background-color: #f2b179; }
+        .tile-16 { background-color: #f59563; }
+        .tile-32 { background-color: #f67c5f; }
+        .tile-64 { background-color: #f65e3b; }
+        .tile-128 { background-color: #edcf72; }
+        .tile-256 { background-color: #edcc61; }
+        .tile-512 { background-color: #edc850; }
+        .tile-1024 { background-color: #edc53f; }
+        .tile-2048 { background-color: #edc22e; }
+
+        /* Smaller screen adjustments */
+        @media (max-width: 600px) {
+            .game-container {
+                width: 300px;
+                height: 300px;
+            }
+
+            .tile {
+                font-size: 24px;
+                width: 65px;
+                height: 65px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="win-message" id="winMessage">Congratulations! You solved the puzzle!</div>
-    <div class="puzzle" id="puzzle"></div>
+    <div class="game-container" id="gameBoard"></div>
     <script src="game.js"></script>
 </body>
 </html>
