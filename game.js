@@ -1,98 +1,175 @@
-// Puzzle game logic
-const puzzleElement = document.getElementById('puzzle');
-const winMessage = document.getElementById('winMessage');
-const gridSize = 4; // 4x4 grid
-let puzzleArray = [];
-let emptyTileIndex = 15; // Starting with the last tile being empty
+// Constants and initial setup
+const gridSize = 4;
+let board = [];
+let gameOver = false;
 
-// Function to create the puzzle pieces
-function createPuzzle() {
-    puzzleArray = [];
-    let imagePosition = 0;
-    // Create the puzzle pieces
-    for (let i = 0; i < gridSize * gridSize; i++) {
-        if (i === emptyTileIndex) {
-            puzzleArray.push(null); // Empty tile
-        } else {
-            puzzleArray.push(imagePosition);
-            imagePosition++;
+// Initialize game
+function initGame() {
+    board = Array(gridSize).fill().map(() => Array(gridSize).fill(0));
+    spawnTile();
+    spawnTile();
+    renderBoard();
+}
+
+// Render the board
+function renderBoard() {
+    const boardContainer = document.getElementById('gameBoard');
+    boardContainer.innerHTML = ''; // Clear the board
+
+    // Create grid and tiles
+    for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+            const tileValue = board[row][col];
+            const tile = document.createElement('div');
+            tile.classList.add('tile');
+            if (tileValue !== 0) {
+                tile.textContent = tileValue;
+                tile.classList.add(`tile-${tileValue}`);
+            }
+            boardContainer.appendChild(tile);
+        }
+    }
+}
+
+// Move and combine tiles based on direction (left, right, up, down)
+function move(direction) {
+    if (gameOver) return;
+
+    let moved = false;
+    if (direction === 'left') moved = slideLeft();
+    if (direction === 'right') moved = slideRight();
+    if (direction === 'up') moved = slideUp();
+    if (direction === 'down') moved = slideDown();
+
+    if (moved) {
+        spawnTile();
+        renderBoard();
+        if (checkWin()) {
+            setTimeout(() => alert('You win!'), 100);
+        } else if (isBoardFull()) {
+            if (checkGameOver()) {
+                setTimeout(() => alert('Game Over!'), 100);
+            }
+        }
+    }
+}
+
+// Slide tiles to the left
+function slideLeft() {
+    let moved = false;
+    for (let row = 0; row < gridSize; row++) {
+        const originalRow = board[row].slice();
+        const filtered = board[row].filter(value => value !== 0);
+        const merged = merge(filtered);
+        board[row] = [...merged, ...Array(gridSize - merged.length).fill(0)];
+        if (originalRow.join('') !== board[row].join('')) moved = true;
+    }
+    return moved;
+}
+
+// Slide tiles to the right
+function slideRight() {
+    for (let row = 0; row < gridSize; row++) {
+        board[row] = board[row].reverse();
+    }
+    const moved = slideLeft();
+    for (let row = 0; row < gridSize; row++) {
+        board[row] = board[row].reverse();
+    }
+    return moved;
+}
+
+// Slide tiles upwards
+function slideUp() {
+    board = transpose(board);
+    const moved = slideLeft();
+    board = transpose(board);
+    return moved;
+}
+
+// Slide tiles downwards
+function slideDown() {
+    board = transpose(board);
+    const moved = slideRight();
+    board = transpose(board);
+    return moved;
+}
+
+// Helper function to transpose the grid (for up and down sliding)
+function transpose(matrix) {
+    return matrix[0].map((_, colIndex) => matrix.map(row => row[colIndex]));
+}
+
+// Merge tiles during a slide
+function merge(arr) {
+    for (let i = 0; i < arr.length - 1; i++) {
+        if (arr[i] === arr[i + 1]) {
+            arr[i] *= 2;
+            arr[i + 1] = 0;
+        }
+    }
+    return arr.filter(value => value !== 0);
+}
+
+// Spawn a new tile (2 or 4) in a random empty spot
+function spawnTile() {
+    const emptyCells = [];
+    for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+            if (board[row][col] === 0) {
+                emptyCells.push([row, col]);
+            }
         }
     }
 
-    shufflePuzzle();
-    renderPuzzle();
+    if (emptyCells.length === 0) return;
+
+    const [row, col] = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    board[row][col] = Math.random() < 0.9 ? 2 : 4;
 }
 
-// Function to shuffle the puzzle pieces
-function shufflePuzzle() {
-    for (let i = puzzleArray.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [puzzleArray[i], puzzleArray[j]] = [puzzleArray[j], puzzleArray[i]];
-    }
-}
-
-// Function to render the puzzle on the screen
-function renderPuzzle() {
-    puzzleElement.innerHTML = '';
-
-    const tileSize = puzzleElement.offsetWidth / gridSize; // Dynamically set tile size based on puzzle container width
-
-    for (let i = 0; i < puzzleArray.length; i++) {
-        const piece = document.createElement('div');
-        piece.classList.add('puzzle-piece');
-
-        piece.style.width = `${tileSize - 2}px`;  // Adjust width and height based on puzzle size
-        piece.style.height = `${tileSize - 2}px`;
-
-        if (puzzleArray[i] !== null) {
-            const row = Math.floor(puzzleArray[i] / gridSize);
-            const col = puzzleArray[i] % gridSize;
-            piece.style.backgroundPosition = `-${col * 100}px -${row * 100}px`;
-        } else {
-            piece.classList.add('empty');
+// Check if the player has won (2048 tile)
+function checkWin() {
+    for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+            if (board[row][col] === 2048) {
+                return true;
+            }
         }
-
-        piece.setAttribute('data-index', i);
-        piece.addEventListener('click', handleTileClick); // For desktop
-        piece.addEventListener('touchstart', handleTileClick, { passive: true }); // For mobile
-        puzzleElement.appendChild(piece);
     }
-
-    checkWinCondition();
+    return false;
 }
 
-// Function to handle tile click event
-function handleTileClick(event) {
-    event.preventDefault(); // Prevents double triggering on touch events
-
-    const clickedTileIndex = parseInt(event.target.getAttribute('data-index'));
-
-    const emptyRow = Math.floor(emptyTileIndex / gridSize);
-    const emptyCol = emptyTileIndex % gridSize;
-
-    const clickedRow = Math.floor(clickedTileIndex / gridSize);
-    const clickedCol = clickedTileIndex % gridSize;
-
-    const isAdjacent =
-        (Math.abs(emptyRow - clickedRow) === 1 && emptyCol === clickedCol) ||
-        (Math.abs(emptyCol - clickedCol) === 1 && emptyRow === clickedRow);
-
-    if (isAdjacent) {
-        // Swap tiles
-        puzzleArray[emptyTileIndex] = puzzleArray[clickedTileIndex];
-        puzzleArray[clickedTileIndex] = null;
-
-        emptyTileIndex = clickedTileIndex;
-        renderPuzzle();
+// Check if the game is over
+function checkGameOver() {
+    for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+            if (board[row][col] === 0) return false;
+            if (row < gridSize - 1 && board[row][col] === board[row + 1][col]) return false;
+            if (col < gridSize - 1 && board[row][col] === board[row][col + 1]) return false;
+        }
     }
+    return true;
 }
 
-// Function to check if the puzzle is solved
-function checkWinCondition() {
-    if (puzzleArray.every((val, index) => val === index || val === null)) {
-        winMessage.style.display = 'block';
+// Check if the board is full (no empty spots)
+function isBoardFull() {
+    for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+            if (board[row][col] === 0) return false;
+        }
     }
+    return true;
 }
 
-// Initialize the puzzle
-createPuzzle();
+// Event listeners for keyboard controls
+document.addEventListener('keydown', (event) => {
+    if (gameOver) return;
+    if (event.key === 'ArrowLeft') move('left');
+    if (event.key === 'ArrowRight') move('right');
+    if (event.key === 'ArrowUp') move('up');
+    if (event.key === 'ArrowDown') move('down');
+});
+
+// Initialize the game
+initGame();
