@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        .puzzle {
+            display: grid;
+            gap: 2px;
+            border: 2px solid #000;
+            width: 80vw; /* Width based on viewport */
+            height: 80vw; /* Height based on viewport */
+            max-width: 400px; /* Max width */
+            max-height: 400px; /* Max height */
+        }
+        .puzzle-piece {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            background-size: 400px 400px;
+        }
+        .empty {
+            background: #f0f0f0;
+            border: 2px dashed #ccc;
+        }
+        .win-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            font-size: 24px;
+            display: none;
+            z-index: 100;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="win-message" id="winMessage">Congratulations! You solved the puzzle!</div>
+    <div class="puzzle" id="puzzle"></div>
+    <script src="game.js"></script>
+</body>
+</html>
