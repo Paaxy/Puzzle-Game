@@ -171,5 +171,30 @@ document.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowDown') move('down');
 });
 
+// Add swipe detection for mobile devices
+let touchStartX = 0;
+let touchStartY = 0;
+
+document.addEventListener('touchstart', (event) => {
+    touchStartX = event.touches[0].clientX;
+    touchStartY = event.touches[0].clientY;
+});
+
+document.addEventListener('touchend', (event) => {
+    const touchEndX = event.changedTouches[0].clientX;
+    const touchEndY = event.changedTouches[0].clientY;
+
+    const diffX = touchEndX - touchStartX;
+    const diffY = touchEndY - touchStartY;
+
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 0) move('right');
+        else move('left');
+    } else {
+        if (diffY > 0) move('down');
+        else move('up');
+    }
+});
+
 // Initialize the game
 initGame();
